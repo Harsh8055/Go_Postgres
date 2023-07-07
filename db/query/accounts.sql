@@ -22,7 +22,7 @@ OFFSET $2;
 DELETE FROM accounts
 WHERE id = $1;
 
---name : UpdateAccount :one
+-- name: UpdateAccount :one
 UPDATE accounts 
 SET balance = $1
 WHERE id = $2
