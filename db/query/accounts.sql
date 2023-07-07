@@ -17,3 +17,7 @@ SELECT * FROM accounts
 ORDER BY id
 LIMIT $1
 OFFSET $2;
+
+-- name: DeleteAccount :exec
+DELETE FROM accounts
+WHERE id = $1;

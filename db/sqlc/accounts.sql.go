@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/lib/pq"
 )
 
 const createAccount = `-- name: CreateAccount :one
@@ -22,22 +20,32 @@ INSERT INTO accounts (
 `
 
 type CreateAccountParams struct {
-	Owner    []string `json:"owner"`
-	Balance  int64    `json:"balance"`
-	Currency string   `json:"currency"`
+	Owner    string `json:"owner"`
+	Balance  int64  `json:"balance"`
+	Currency string `json:"currency"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
-	row := q.db.QueryRowContext(ctx, createAccount, pq.Array(arg.Owner), arg.Balance, arg.Currency)
+	row := q.db.QueryRowContext(ctx, createAccount, arg.Owner, arg.Balance, arg.Currency)
 	var i Account
 	err := row.Scan(
 		&i.ID,
-		pq.Array(&i.Owner),
+		&i.Owner,
 		&i.Balance,
 		&i.Currency,
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const deleteAccount = `-- name: DeleteAccount :exec
+DELETE FROM accounts
+WHERE id = $1
+`
+
+func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteAccount, id)
+	return err
 }
 
 const getAccount = `-- name: GetAccount :one
@@ -50,7 +58,7 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	var i Account
 	err := row.Scan(
 		&i.ID,
-		pq.Array(&i.Owner),
+		&i.Owner,
 		&i.Balance,
 		&i.Currency,
 		&i.CreatedAt,
@@ -81,7 +89,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		var i Account
 		if err := rows.Scan(
 			&i.ID,
-			pq.Array(&i.Owner),
+			&i.Owner,
 			&i.Balance,
 			&i.Currency,
 			&i.CreatedAt,
